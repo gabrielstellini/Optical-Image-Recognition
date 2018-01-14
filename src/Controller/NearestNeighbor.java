@@ -48,7 +48,7 @@ public class NearestNeighbor extends Algorithm {
         }
     }
 
-    private double getDistance(ImageData imageData1, ImageData imageData2){
+    public static double getDistance(ImageData imageData1, ImageData imageData2){
         int[] image1BlackPixels = imageData1.getNumOfBlackPixels();
         int[] image2BlackPixels = imageData2.getNumOfBlackPixels();
 
@@ -77,5 +77,15 @@ public class NearestNeighbor extends Algorithm {
 
     public boolean isCorrect(){
         return number == imageToCompare.getNumber();
+    }
+
+    @Override
+    public void setList(List<ImageData> imageData) {
+        this.list = imageData;
+    }
+
+    @Override
+    public void setImageToCompare(ImageData imageToCompare) {
+        this.imageToCompare = imageToCompare;
     }
 }

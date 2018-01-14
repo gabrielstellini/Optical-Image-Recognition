@@ -1,5 +1,6 @@
 import Controller.*;
 import Model.ImageData;
+import Model.SearchDetail;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -12,7 +13,6 @@ public class Main {
         ReadData fileData2 = new ReadData("src/Data/cw2DataSet2.csv");
         LinkedList<ImageData> imagesData2 = fileData2.getData();
 
-        NearestNeighbor nearestNeighbor = new NearestNeighbor();
 
 //        printResults(nearestNeighbor);
 
@@ -23,11 +23,12 @@ public class Main {
         accuracy = getNNAccuracyMultiThreaded(imagesData2, imagesData1);
         System.out.println("Nearest neighbor accuracy from data set 2 to data set 1 is: " + accuracy);
 
-        //Non multithreaded testing (much slower - takes a minute but works with all algorithms)
-//        accuracy = getAlgorithmAccuracy(nearestNeighbor, imagesData1, imagesData2);
-//        System.out.println("Nearest neighbor accuracy from data set 1 to data set 2 is: " + accuracy);
-//        accuracy = getAlgorithmAccuracy(nearestNeighbor, imagesData2, imagesData1);
-//        System.out.println("Nearest neighbor accuracy from data set 2 to data set 1 is: " + accuracy);
+        accuracy = getKNNAccuracyMultiThreaded(3, imagesData1, imagesData2);
+        System.out.println("K-Nearest neighbor accuracy from data set 1 to data set 2 is: " + accuracy);
+        accuracy = getKNNAccuracyMultiThreaded(3, imagesData2, imagesData1);
+        System.out.println("K-Nearest neighbor accuracy from data set 2 to data set 1 is: " + accuracy);
+
+
     }
 
     public static void printData(LinkedList<ImageData> imagesData){
@@ -69,27 +70,55 @@ public class Main {
                 totalCorrect++;
             }
         }
-
         return 100.0 * (double) totalCorrect / imagesData1.size();
     }
 
-    private static double getAlgorithmAccuracy(Algorithm algorithm, LinkedList<ImageData> imagesData1, LinkedList<ImageData> imagesData2) {
+    public static double getKNNAccuracyMultiThreaded(int K, LinkedList<ImageData> imagesData1, LinkedList<ImageData> imagesData2){
+        List<KNearestNeighbor> threadPool = new LinkedList<>();
         int totalCorrect = 0;
-        int totalIncorrect = 0;
-
 
         for(ImageData currentImage: imagesData2) {
-            algorithm.run(imagesData1, currentImage);
-            if(algorithm.getNumber() == currentImage.getNumber()){
-                totalCorrect++;
-            }
-            else {
-                totalIncorrect++;
+            KNearestNeighbor knn = new KNearestNeighbor(K, imagesData1, currentImage);
+            threadPool.add(knn);
+            knn.start();
+        }
+
+        for(KNearestNeighbor thread: threadPool){
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
 
+        for (KNearestNeighbor thread: threadPool){
+            if(thread.isCorrect()){
+                totalCorrect++;
+            }
+        }
         return 100.0 * (double) totalCorrect / imagesData1.size();
     }
+//
+//    private static double getAlgorithmAccuracy(Algorithm algorithm, LinkedList<ImageData> imagesData1, LinkedList<ImageData> imagesData2) {
+//        int totalCorrect = 0;
+//        int totalIncorrect = 0;
+//
+//
+//        for(ImageData currentImage: imagesData2) {
+//            algorithm.setList(imagesData1);
+//            algorithm.setImageToCompare(currentImage);
+//            algorithm.run();
+//
+//            if(algorithm.getNumber() == currentImage.getNumber()){
+//                totalCorrect++;
+//            }
+//            else {
+//                totalIncorrect++;
+//            }
+//        }
+//
+//        return 100.0 * (double) totalCorrect / imagesData1.size();
+//    }
 
     private static void printResults(NearestNeighbor algorithm){
         System.out.println("Most similar number was: " + algorithm.getNumber());

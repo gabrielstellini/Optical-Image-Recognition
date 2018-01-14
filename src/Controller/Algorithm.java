@@ -8,15 +8,12 @@ import java.util.Random;
 
 public abstract class Algorithm extends Thread{
 
-    //non thread safe method
-    abstract public void run(List<ImageData> list, ImageData imageToCompare);
-
     public static int getRandomIndex(LinkedList<ImageData> data) {
         return new Random().nextInt(data.size());
     }
 
 
-    public abstract int getBestIndex();
-    public abstract double getBestDistance();
-    public abstract int getNumber();
+    public abstract void setList(List<ImageData> imageData);
+    public abstract void setImageToCompare(ImageData imageToCompare);
+    public abstract boolean isCorrect();
 }
