@@ -1,4 +1,5 @@
 import Controller.*;
+import Controller.NeuralNetwork2.TestApplication;
 import Model.ImageData;
 import Model.SearchDetail;
 
@@ -18,17 +19,18 @@ public class Main {
 
         double accuracy;
 
-        accuracy = getNNAccuracyMultiThreaded(imagesData1, imagesData2);
-        System.out.println("Nearest neighbor accuracy from data set 1 to data set 2 is: " + accuracy);
-        accuracy = getNNAccuracyMultiThreaded(imagesData2, imagesData1);
-        System.out.println("Nearest neighbor accuracy from data set 2 to data set 1 is: " + accuracy);
+//        accuracy = getNNAccuracyMultiThreaded(imagesData1, imagesData2);
+//        System.out.println("Nearest neighbor accuracy from data set 1 to data set 2 is: " + accuracy);
+//        accuracy = getNNAccuracyMultiThreaded(imagesData2, imagesData1);
+//        System.out.println("Nearest neighbor accuracy from data set 2 to data set 1 is: " + accuracy);
+//
+//        accuracy = getKNNAccuracyMultiThreaded(3, imagesData1, imagesData2);
+//        System.out.println("K-Nearest neighbor accuracy from data set 1 to data set 2 is: " + accuracy);
+//        accuracy = getKNNAccuracyMultiThreaded(3, imagesData2, imagesData1);
+//        System.out.println("K-Nearest neighbor accuracy from data set 2 to data set 1 is: " + accuracy);
 
-        accuracy = getKNNAccuracyMultiThreaded(3, imagesData1, imagesData2);
-        System.out.println("K-Nearest neighbor accuracy from data set 1 to data set 2 is: " + accuracy);
-        accuracy = getKNNAccuracyMultiThreaded(3, imagesData2, imagesData1);
-        System.out.println("K-Nearest neighbor accuracy from data set 2 to data set 1 is: " + accuracy);
-
-
+        accuracy = getNeuralNetworkAccuracy(imagesData1, imagesData2);
+        System.out.println("Neural network accuracy from data set 1 to data set 2 is: " + accuracy);
     }
 
     public static void printData(LinkedList<ImageData> imagesData){
@@ -42,6 +44,24 @@ public class Main {
             }
             System.out.println();
         }
+    }
+
+    public static double getNeuralNetworkAccuracy(LinkedList<ImageData> imagesData1, LinkedList<ImageData> imagesData2){
+        TestApplication testApplication = new TestApplication();
+        testApplication.setList(imagesData1);
+        testApplication.setImageToCompare(imagesData2.get(0));
+        testApplication.run();
+
+        int totalCorrect = 0;
+
+        for (ImageData imageData : imagesData2){
+            boolean isCorrect = testApplication.isCorrect(imageData);
+            if (isCorrect){
+                totalCorrect++;
+            }
+        }
+
+        return 100.0 * (double) totalCorrect / imagesData1.size();
     }
 
     public static double getNNAccuracyMultiThreaded(LinkedList<ImageData> imagesData1, LinkedList<ImageData> imagesData2){
