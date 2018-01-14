@@ -1,5 +1,6 @@
 package Controller;
 
+import Model.Algorithm;
 import Model.ImageData;
 
 import java.util.*;
@@ -8,7 +9,7 @@ import java.util.stream.IntStream;
 import static java.util.Comparator.comparing;
 
 public class KNearestNeighbor extends Algorithm {
-    private int K = 0;
+    private int K;
     private List<ImageData> list;
     private ImageData imageToCompare;
     //in the order of closest to least close
@@ -53,7 +54,7 @@ public class KNearestNeighbor extends Algorithm {
 
 
     //used to sort distances and get the K of each
-    public static int[] bottomK(final double[] input, final int K) {
+    private static int[] bottomK(final double[] input, final int K) {
         return IntStream.range(0, input.length)
                 .boxed()
                 .sorted(comparing(i -> input[i]))
@@ -74,7 +75,7 @@ public class KNearestNeighbor extends Algorithm {
     }
 
     //returns most popular number in an array, O(n log n)
-    public int findPopular(int[] a) {
+    private int findPopular(int[] a) {
 
         if (a == null || a.length == 0)
             return 0;

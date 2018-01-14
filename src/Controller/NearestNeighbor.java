@@ -1,5 +1,6 @@
 package Controller;
 
+import Model.Algorithm;
 import Model.ImageData;
 
 import java.util.List;
