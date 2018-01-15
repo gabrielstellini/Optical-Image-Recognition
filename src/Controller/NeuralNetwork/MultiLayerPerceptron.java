@@ -50,7 +50,11 @@ public class MultiLayerPerceptron {
         }
     }
 
-    //Saves neural network to a file
+
+    /**
+     * Saves the neural network to a file
+     * @param filename Name of file to be saved
+     */
     public void save(String filename) {
         try {
             RandomAccessFile aFile = new RandomAccessFile(filename, "rw");
@@ -72,7 +76,10 @@ public class MultiLayerPerceptron {
         }
     }
 
-    //Reads neural network from file
+    /**
+     * Reads the weights and hidden neuron values to a file
+     * @param filename Name of file to be read
+     */
     public void load(String filename){
         try {
             RandomAccessFile rFile = new RandomAccessFile(filename, "rw");
@@ -119,14 +126,14 @@ public class MultiLayerPerceptron {
                 guess = i;
             }
         }
-        System.out.println("The neural network thinks that the correct answer " + answer
-                + " represents a " + guess);
+//        System.out.println("The neural network thinks that the correct answer " + answer
+//                + " represents a " + guess);
 
         return guess == answer;
     }
 
     //assigns values to the input neurons
-    public void populateInput(ImageData imageData) {
+    private void populateInput(ImageData imageData) {
         int[] data = imageData.getNumOfBlackPixels();
 
         for(int i = 0; i < inputN; i++) {
@@ -168,7 +175,7 @@ public class MultiLayerPerceptron {
         prWeights = Arrays.copyOf(weights, weights.length);
 
         int target = 0;
-        while(Math.abs(mse-lmse) > 0.0001f && (epochs < maxEpochs || epochs != -1)) {
+        while(Math.abs(mse-lmse) > 0.0001f && epochs < maxEpochs) {
             //for each epoch reset the mean square error
             mse = 0.0f;
 
@@ -281,7 +288,7 @@ public class MultiLayerPerceptron {
     }
 
     //calculates the whole network, from input to output
-    public void calculateNetwork() {
+    private void calculateNetwork() {
         //propagate towards the hidden layer
         for(int hiddenIndex = 0; hiddenIndex < hiddenN; hiddenIndex++)
         {
@@ -355,7 +362,7 @@ public class MultiLayerPerceptron {
         return hiddenNeurons[(layer-1)*hiddenN + hid];
     }
 
-    /*math help*/
+    /*math helper functions*/
     private float sigmoid(float value) {
         return (float)(1f/(1f+Math.exp(-value)));
     }
