@@ -1,0 +1,8 @@
+Each run is called an epoch
+
+Learning algorithm for neural network:
+1) Keep looping until the least mean square error is small
+2) Normalise all values - put them as either 0 or 1
+3) Calculate the network
+4) Calculate the error
+5) Adjust the weights

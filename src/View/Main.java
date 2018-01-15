@@ -1,7 +1,8 @@
+package View;
+
 import Controller.*;
-import Controller.NeuralNetwork2.TestApplication;
+import Controller.NeuralNetwork.MLPAlgorithm;
 import Model.ImageData;
-import Model.SearchDetail;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -47,15 +48,15 @@ public class Main {
     }
 
     public static double getNeuralNetworkAccuracy(LinkedList<ImageData> imagesData1, LinkedList<ImageData> imagesData2){
-        TestApplication testApplication = new TestApplication();
-        testApplication.setList(imagesData1);
-        testApplication.setImageToCompare(imagesData2.get(0));
-        testApplication.run();
+        MLPAlgorithm mlpAlgorithm = new MLPAlgorithm();
+        mlpAlgorithm.setList(imagesData1);
+        mlpAlgorithm.setImageToCompare(imagesData2.get(0));
+        mlpAlgorithm.run();
 
         int totalCorrect = 0;
 
         for (ImageData imageData : imagesData2){
-            boolean isCorrect = testApplication.isCorrect(imageData);
+            boolean isCorrect = mlpAlgorithm.isCorrect(imageData);
             if (isCorrect){
                 totalCorrect++;
             }

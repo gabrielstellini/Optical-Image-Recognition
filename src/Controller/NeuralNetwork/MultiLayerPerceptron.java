@@ -1,4 +1,4 @@
-package Controller.NeuralNetwork2;
+package Controller.NeuralNetwork;
 
 import Model.ImageData;
 
@@ -8,7 +8,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 public class MultiLayerPerceptron {
@@ -27,22 +26,23 @@ public class MultiLayerPerceptron {
     private int hiddenN;
     private int hiddenL;
 
-    public MultiLayerPerceptron(int hiddenN, int hiddenL) {
-        outputN = 10; //the 9 possible numbers and zero
-        inputN = 64;
-        this.hiddenL = hiddenL;
-        this.hiddenN = hiddenN;
+    MultiLayerPerceptron(){
+        outputN = Configuration.outputN;
+        inputN = Configuration.inputN;
+        this.hiddenL = Configuration.hiddenLayers;
+        this.hiddenN = Configuration.hiddenNeurons;
 
+        //total number of weights required (input neurons + hidden neurons + output neurons)
         int weightsSize = inputN*hiddenN+(hiddenN*hiddenN*(hiddenL-1))+hiddenN*outputN;
 
-        //let's allocate the memory for the weights
         weights = new float[weightsSize];
 
-        //also let's set the size for the neurons vector
+        //initialising neurons in network
         inputNeurons = new float[inputN];
         hiddenNeurons = new float[hiddenN*hiddenL];
         outputNeurons = new float[outputN];
 
+        //randomise weights for inputs to 1st hidden layer
         Random rn = new Random();
         rn.setSeed(System.currentTimeMillis());
         for(int i = 0; i < weightsSize; i++) {
@@ -50,8 +50,8 @@ public class MultiLayerPerceptron {
         }
     }
 
+    //Saves neural network to a file
     public void save(String filename) {
-        //WRITE
         try {
             RandomAccessFile aFile = new RandomAccessFile(filename, "rw");
             FileChannel outChannel = aFile.getChannel();
@@ -72,8 +72,8 @@ public class MultiLayerPerceptron {
         }
     }
 
-
-    public void load(String filename) {
+    //Reads neural network from file
+    public void load(String filename){
         try {
             RandomAccessFile rFile = new RandomAccessFile(filename, "rw");
             FileChannel inChannel = rFile.getChannel();
@@ -93,60 +93,46 @@ public class MultiLayerPerceptron {
         }
     }
 
-    //calculates the whole network, from input to output
-    public void calculateNetwork() {
-        //let's propagate towards the hidden layer
-        for(int hidden = 0; hidden < hiddenN; hidden++)
+    /**
+     * Uses the neural network to guess an image, then compares it to the actual value returned
+     * @param imageToCompare sample image to test
+     * @return boolean - matches image data sent?
+     */
+    public boolean GuessImage(ImageData imageToCompare){
+        //first populate the input neurons
+        populateInput(imageToCompare);
+
+        int answer = imageToCompare.getNumber();
+
+        //then calculate the network
+        calculateNetwork();
+
+        float winner = -1;
+        int guess = 0;
+
+        //find the best fitting output
+        for(int i = 0; i < outputN; i++)
         {
-            hiddenNeurons[hidden] = 0.0f; // Layer one neuron.
-
-            for(int input = 0 ; input < inputN; input++)
+            if(outputNeurons[i] > winner)
             {
-                hiddenNeurons[hidden] += inputNeurons[input] * inputToHidden(input,hidden);
-            }
-
-            //and finally pass it through the activation function
-            hiddenNeurons[hidden] = sigmoid(hiddenNeurons[hidden]);
-        }
-
-        //now if we got more than one hidden layers
-        for(int i = 2; i <= hiddenL; i++) {
-            //for each one of these extra layers calculate their values
-            for(int j = 0; j < hiddenN; j++) { //to
-                hiddenNeurons[(i-1)*hiddenN + j] = 0.0f;
-
-                for(int k = 0; k <hiddenN; k++) { //from
-                    hiddenNeurons[(i-1)*hiddenN + j] += hiddenNeurons[(i-2)*hiddenN + k] * hiddenToHidden(i,k,j);
-                }
-
-                //and finally pass it through the activation function
-                hiddenNeurons[(i-1)*hiddenN + j] = sigmoid(hiddenNeurons[(i-1)*hiddenN + j]);
+                winner = outputNeurons[i];
+                guess = i;
             }
         }
+        System.out.println("The neural network thinks that the correct answer " + answer
+                + " represents a " + guess);
 
-        //and now hidden to output
-        for(int i = 0; i < outputN; i++) {
-            outputNeurons[i] = 0.0f;
-
-            for(int j = 0; j < hiddenN; j++)
-            {
-                outputNeurons[i] += hiddenNeurons[(hiddenL-1)*hiddenN + j] * hiddenToOutput(j,i);
-            }
-
-            //and finally pass it through the activation function
-            outputNeurons[i] = sigmoid( outputNeurons[i] );
-        }
-
+        return guess == answer;
     }
 
     //assigns values to the input neurons
     public void populateInput(ImageData imageData) {
-
         int[] data = imageData.getNumOfBlackPixels();
 
         for(int i = 0; i < inputN; i++) {
             //if the specific pixel is on
             //set the corresponding neuron
+            //values for each pixel range from 0 to 16, neural network takes anything above 8 to be "on" and below 8 to be off
             if(data[i] >= 8) {
                 inputNeurons[i] = 1.0f;
             } else {
@@ -155,8 +141,18 @@ public class MultiLayerPerceptron {
         }
     }
 
+    public boolean train(List<ImageData> imageDataArr){
+        return train(
+                Configuration.teachingStep,
+                Configuration.leastMeanSquareError,
+                Configuration.momentum,
+                imageDataArr,
+                Configuration.maxEpochs
+        );
+    }
+
     //trains the network according to our parameters
-    public boolean trainNetwork(float teachingStep, float lmse, float momentum, List<ImageData> imageDataArr, int maxEpochs) {
+    private boolean train(float teachingStep, float lmse, float momentum, List<ImageData> imageDataArr, int maxEpochs) {
         float mse = 999.0f;
         int epochs = 1;
         float error = 0.0f;
@@ -172,22 +168,22 @@ public class MultiLayerPerceptron {
         prWeights = Arrays.copyOf(weights, weights.length);
 
         int target = 0;
-        while(Math.abs(mse-lmse) > 0.0001f) {
+        while(Math.abs(mse-lmse) > 0.0001f && (epochs < maxEpochs || epochs != -1)) {
             //for each epoch reset the mean square error
             mse = 0.0f;
 
             //for each image
             for(ImageData imageData : imageDataArr) {
 
-                //first populate the input neurons
+                //populate the input neurons
                 populateInput(imageData);
                 target = imageData.getNumber();
 
-                //then calculate the network
+                //calculate the network
                 calculateNetwork();
 
                 //Now we have calculated the network for this iteration
-                //let's back-propagate following the back-propagation algorithm
+                //back-propagate following the back-propagation algorithm
                 for(int i = 0; i < outputN; i++) {
                     //let's get the delta of the output layer
                     //and the accumulated error
@@ -279,40 +275,59 @@ public class MultiLayerPerceptron {
             if(epochs % 1000 == 0) {
                 System.out.println(epochs + " - " + mse);
             }
-            if(epochs > maxEpochs) break;
             epochs++;
         }
         return true;
     }
 
-    //recalls the network for a given bitmap file
-    public boolean recallNetwork(ImageData imageToCompare) {
-        //first populate the input neurons
-        populateInput(imageToCompare);
-
-        int answer = imageToCompare.getNumber();
-
-        //then calculate the network
-        calculateNetwork();
-
-        float winner = -1;
-        int guess = 0;
-
-        //find the best fitting output
-        for(int i = 0; i < outputN; i++)
+    //calculates the whole network, from input to output
+    public void calculateNetwork() {
+        //propagate towards the hidden layer
+        for(int hiddenIndex = 0; hiddenIndex < hiddenN; hiddenIndex++)
         {
-            if(outputNeurons[i] > winner)
+            hiddenNeurons[hiddenIndex] = 0.0f; // Layer one neuron.
+
+            for(int input = 0 ; input < inputN; input++)
             {
-                winner = outputNeurons[i];
-                guess = i;
+                //set value of first layer hidden neurons to input neurons + weights
+                hiddenNeurons[hiddenIndex] += inputNeurons[input] * inputToHidden(input,hiddenIndex);
+            }
+
+            //pass it through the activation function
+            hiddenNeurons[hiddenIndex] = sigmoid(hiddenNeurons[hiddenIndex]);
+        }
+
+        //more than one hidden layers
+        for(int i = 2; i <= hiddenL; i++) {
+            //for each one of these extra layers calculate their values
+            for(int j = 0; j < hiddenN; j++) { //to
+                hiddenNeurons[(i-1)*hiddenN + j] = 0.0f;
+
+                for(int k = 0; k <hiddenN; k++) { //from
+                    hiddenNeurons[(i-1)*hiddenN + j] += hiddenNeurons[(i-2)*hiddenN + k] * hiddenToHidden(i,k,j);
+                }
+
+                //and finally pass it through the activation function
+                hiddenNeurons[(i-1)*hiddenN + j] = sigmoid(hiddenNeurons[(i-1)*hiddenN + j]);
             }
         }
-        System.out.println("The neural network thinks that the correct answer " + answer
-                + " represents a " + guess);
 
-        return guess == answer;
+        //and now hidden to output
+        for(int i = 0; i < outputN; i++) {
+            outputNeurons[i] = 0.0f;
+
+            for(int j = 0; j < hiddenN; j++)
+            {
+                outputNeurons[i] += hiddenNeurons[(hiddenL-1)*hiddenN + j] * hiddenToOutput(j,i);
+            }
+
+            //and finally pass it through the activation function
+            outputNeurons[i] = sigmoid( outputNeurons[i] );
+        }
+
     }
 
+    //HELPER FUNCTIONS
     private float inputToHidden(int inp, int hid) {
         return weights[inputN*hid+inp];
     }
@@ -349,3 +364,4 @@ public class MultiLayerPerceptron {
     }
 
 }
+
