@@ -20,18 +20,20 @@ public class Main {
 
         double accuracy;
 
-//        accuracy = getNNAccuracyMultiThreaded(imagesData1, imagesData2);
-//        System.out.println("Nearest neighbor accuracy from data set 1 to data set 2 is: " + accuracy);
-//        accuracy = getNNAccuracyMultiThreaded(imagesData2, imagesData1);
-//        System.out.println("Nearest neighbor accuracy from data set 2 to data set 1 is: " + accuracy);
-//
-//        accuracy = getKNNAccuracyMultiThreaded(3, imagesData1, imagesData2);
-//        System.out.println("K-Nearest neighbor accuracy from data set 1 to data set 2 is: " + accuracy);
-//        accuracy = getKNNAccuracyMultiThreaded(3, imagesData2, imagesData1);
-//        System.out.println("K-Nearest neighbor accuracy from data set 2 to data set 1 is: " + accuracy);
+        accuracy = getNNAccuracyMultiThreaded(imagesData1, imagesData2);
+        System.out.println("Nearest neighbor accuracy from data set 1 to data set 2 is: " + accuracy);
+        accuracy = getNNAccuracyMultiThreaded(imagesData2, imagesData1);
+        System.out.println("Nearest neighbor accuracy from data set 2 to data set 1 is: " + accuracy);
+
+        accuracy = getKNNAccuracyMultiThreaded(3, imagesData1, imagesData2);
+        System.out.println("K-Nearest neighbor accuracy from data set 1 to data set 2 is: " + accuracy);
+        accuracy = getKNNAccuracyMultiThreaded(3, imagesData2, imagesData1);
+        System.out.println("K-Nearest neighbor accuracy from data set 2 to data set 1 is: " + accuracy);
 
         accuracy = getNeuralNetworkAccuracy(imagesData1, imagesData2);
         System.out.println("Neural network accuracy from data set 1 to data set 2 is: " + accuracy);
+        accuracy = getNeuralNetworkAccuracy(imagesData2, imagesData1);
+        System.out.println("Neural network accuracy from data set 2 to data set 1 is: " + accuracy);
     }
 
     public static void printData(LinkedList<ImageData> imagesData){
@@ -119,27 +121,6 @@ public class Main {
         }
         return 100.0 * (double) totalCorrect / imagesData1.size();
     }
-//
-//    private static double getAlgorithmAccuracy(Algorithm algorithm, LinkedList<ImageData> imagesData1, LinkedList<ImageData> imagesData2) {
-//        int totalCorrect = 0;
-//        int totalIncorrect = 0;
-//
-//
-//        for(ImageData currentImage: imagesData2) {
-//            algorithm.setList(imagesData1);
-//            algorithm.setImageToCompare(currentImage);
-//            algorithm.run();
-//
-//            if(algorithm.getNumber() == currentImage.getNumber()){
-//                totalCorrect++;
-//            }
-//            else {
-//                totalIncorrect++;
-//            }
-//        }
-//
-//        return 100.0 * (double) totalCorrect / imagesData1.size();
-//    }
 
     private static void printResults(NearestNeighbor algorithm){
         System.out.println("Most similar number was: " + algorithm.getNumber());
