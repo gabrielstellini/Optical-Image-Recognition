@@ -1,8 +1,11 @@
 # Welcome to my Optical image recognition library
 
 The application uses 3 algorithms:
+
 •	Nearest neighbour/Euclidean distance (NN)
+
 •	K-Nearest neighbour/Euclidean with some modification (K-NN)
+
 •	Multi-layer perceptron neural network (MLP)
 
 ![Results](https://raw.githubusercontent.com/gabrielstellini/Optical-Image-Recognition/master/Results.PNG)
