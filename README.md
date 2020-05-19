@@ -1,4 +1,4 @@
-# Welcome to my Optical image recognition library
+# Overview
 
 The application uses 3 algorithms:
 
